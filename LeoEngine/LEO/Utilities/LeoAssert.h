@@ -1,5 +1,4 @@
 #pragma once
-#include "defines.h"
 #include <format>
 #include <string>
 #include <sstream>
@@ -15,9 +14,7 @@ namespace LEO
 			Terminate
 		};
 	public:
-		Assertion(const std::string& expression, const char* file, const char* functionName, int line, 
-			Consequence con = Consequence::Terminate);
-
+		Assertion(const std::string& expression, const char* file, const char* functionName, int line, Consequence con);
 		~Assertion();
 	public:
 		Assertion& note(const std::string& message);
@@ -36,16 +33,18 @@ namespace LEO
 
 		std::ostringstream m_stream;
 	};
- 
+
+}
+
 #define ZZ_STR_(x) #x  
 #define ZL_STR(x) ZZ_STR_(x)  
 
-#if LEODEBUG
-	#define LEOASSERTF(expr, msg, ...) (bool(expr)) ? void(0) : (void)LEO::Assertion{ ZL_STR(expr), __FILE__, __FUNCTION__, __LINE__ }.note(std::format(msg, __VA_ARGS__))
-	#define LEOCHECKF(expr, msg, ...) (bool(expr)) ? void(0) : (void)LEO::Assertion{ ZL_STR(expr), __FILE__, __FUNCTION__, __LINE__, LEO::Assertion::Consequence::Log }.note(std::format(msg, __VA_ARGS__))
+#if !PRODUCTION_BUILD
+	#define LEOASSERT(expr, msg) (bool(expr)) ? void(0) : (void)LEO::Assertion{ ZL_STR(expr), __FILE__, __FUNCTION__, __LINE__, LEO::Assertion::Consequence::Terminate }.note(msg)
+	#define LEOCHECK(expr, msg)  (bool(expr)) ? void(0) : (void)LEO::Assertion{ ZL_STR(expr), __FILE__, __FUNCTION__, __LINE__, LEO::Assertion::Consequence::Log }.note(msg)
 
-	#define LEOASSERT(expr, msg) (bool(expr)) ? void(0) : (void)LEO::Assertion{ ZL_STR(expr), __FILE__, __FUNCTION__, __LINE__ }.note(msg)
-	#define LEOCHECK(expr, msg) (bool(expr)) ? void(0) : (void)LEO::Assertion{ ZL_STR(expr), __FILE__, __FUNCTION__, __LINE__, LEO::Assertion::Consequence::Log }.note(msg)
+	#define LEOASSERTF(expr, msg, ...) LEOASSERT(expr, std::format(msg, __VA_ARGS__))
+	#define LEOCHECKF(expr, msg, ...)  LEOCHECK(expr,  std::format(msg, __VA_ARGS__))
 
 	#define LEOWATCH(var) .watch((var), ZL_STR(var))
 #else
@@ -57,6 +56,3 @@ namespace LEO
 
 	#define LEOWATCH(var)
 #endif
-
-	
-}
