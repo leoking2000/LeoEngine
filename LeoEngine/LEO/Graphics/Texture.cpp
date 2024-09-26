@@ -1,5 +1,6 @@
 #include <glad/glad.h>
 #include "Texture.h"
+#include "../Utilities/LeoAssert.h"
 
 namespace LEO
 {
@@ -9,6 +10,14 @@ namespace LEO
         GL_TEXTURE_3D,
         GL_TEXTURE_2D_ARRAY
     };
+
+    Texture::Texture(u32 width, u32 height, TextureFormat format, u8* data)
+        :
+        Texture(DIM_2D, { width, height, 0 }, format,
+            TextureMinFiltering::MIN_NEAREST, TextureMagFiltering::MAG_NEAREST,
+            TextureWrapping::CLAMP_TO_EDGE, TextureWrapping::CLAMP_TO_EDGE,
+            data)
+    {}
 
     Texture::Texture(
         TextureDimensions dimensions, TexSize size,
@@ -20,6 +29,8 @@ namespace LEO
         m_params(dimensions, size, format, min_filter, mag_filter, S, T)
     {
         glGenTextures(1, &m_id);
+
+        IsTexSizeValid(size);
 
         SetFiltering(m_params.min_filter, m_params.mag_filter);
         SetWrapping(m_params.wrapping_s, m_params.wrapping_t);
@@ -46,11 +57,6 @@ namespace LEO
     Texture::~Texture()
     {
         glDeleteTextures(1, &m_id);
-    }
-
-    u32 Texture::GetID() const
-    {
-        return m_id;
     }
 
     void Texture::Bind(u32 slot) const
@@ -221,29 +227,42 @@ namespace LEO
             glGenerateMipmap(TYPE[m_params.dimensions]);
         }
 
-
         glBindTexture(TYPE[m_params.dimensions], 0);
     }
 
     void Texture::Resize(const TexSize& new_size)
     {
         if (IsTexSizeValid(new_size) == false)
-            return;
-
-        m_params.size = new_size;
-        SetImageData(0, m_params.format);
-    }
-
-    bool Texture::IsTexSizeValid(const TexSize& new_size)
-    {
-        for (u32 i = 0; i < (u32)m_params.dimensions + 1; i++)
         {
-            if (m_params.size[i] == 0)
-            {
-                return false;
-            }
+            return;
         }
 
-        return true;
+        m_params.size = new_size;
+        SetImageData(nullptr, m_params.format);
+    }
+
+    bool Texture::IsTexSizeValid(const TexSize& new_size) const
+    {
+        bool isValid = false;
+
+        if (m_params.dimensions == DIM_1D)
+        {
+            isValid = new_size.x != 0 && new_size.y == 0 && new_size.z == 0;
+        }
+
+        if (m_params.dimensions == DIM_2D)
+        {
+            isValid = new_size.x != 0 && new_size.y != 0 && new_size.z == 0;
+        }
+
+        if (m_params.dimensions == DIM_3D || m_params.dimensions == DIM_2D_ARRAY)
+        {
+            isValid = new_size.x != 0 && new_size.y != 0 && new_size.z != 0;
+        }
+
+        LEOCHECK(isValid, "Texture size is invalid")LEOWATCH(m_params.dimensions + 1)
+            LEOWATCH(new_size.x)LEOWATCH(new_size.y)LEOWATCH(new_size.z);
+
+        return isValid;
     }
 }

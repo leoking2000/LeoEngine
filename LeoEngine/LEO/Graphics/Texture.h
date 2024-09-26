@@ -6,9 +6,9 @@ namespace LEO
 {
     enum TextureDimensions
     {
-        DIM_1D = 0,
-        DIM_2D = 1,
-        DIM_3D = 2,
+        DIM_1D       = 0,
+        DIM_2D       = 1,
+        DIM_3D       = 2,
         DIM_2D_ARRAY = 3
     };
 
@@ -52,6 +52,8 @@ namespace LEO
     public:
         using TexSize = glm::vec<3, u32>;
     public:
+        Texture(u32 width, u32 height, TextureFormat format = TextureFormat::RGBA8UB, u8* data = nullptr);
+
         Texture(TextureDimensions dimensions, TexSize size, TextureFormat format,
             TextureMinFiltering min_filter, TextureMagFiltering mag_filter,
             TextureWrapping S, TextureWrapping T, u8* data
@@ -65,20 +67,19 @@ namespace LEO
 
         ~Texture();
     public:
-        u32 GetID() const;
+        inline u32 GetID() const { return m_id; };
+        inline TextureDimensions Dimensions() const { return m_params.dimensions; }
+        inline TexSize Size() const { return m_params.size; }
+    public:
         void Bind(u32 slot = 0) const;
         void UnBind() const;
-
+    public:
         void SetFiltering(TextureMinFiltering min_filter, TextureMagFiltering mag_filter);
         void SetWrapping(TextureWrapping S, TextureWrapping T);
         void SetImageData(u8* data, TextureFormat format);
-
         void Resize(const TexSize& new_size);
-    public:
-        inline TextureDimensions Dimensions() const { return m_params.dimensions; }
-        inline TexSize Size() const { return m_params.size; }
     private:
-        bool IsTexSizeValid(const TexSize& new_size);
+        bool IsTexSizeValid(const TexSize& new_size) const;
     private:
         struct TextureParameters
         {
