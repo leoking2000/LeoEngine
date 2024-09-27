@@ -21,6 +21,14 @@ namespace LEO
         return m_insertedAssetID - 1;
     }
 
+    u32 AssetManager::AddMesh(Mesh&& m)
+    {
+        auto inserted = m_mesh_map.insert(std::make_pair(m_insertedAssetID, std::move(m)));
+        m_insertedAssetID++;
+
+        return m_insertedAssetID - 1;
+    }
+
     void AssetManager::RemoveMesh(u32 id)
     {
         Remove<Mesh>(m_mesh_map, id, "Mesh");

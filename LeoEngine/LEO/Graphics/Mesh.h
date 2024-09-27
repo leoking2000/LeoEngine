@@ -29,16 +29,15 @@ namespace LEO
 
 		~Mesh() = default;
 	public:
-		void Draw();
+		void Draw() const;
 	public:
 		static Mesh GenerateMesh(DefaultMesh shape);
 		static Mesh GenarateCube();
 		static Mesh GenarateSphere(u32 prec = 48);
 		static Mesh GenarateQuard(u32 repet = 1);
 		static Mesh GenarateScreenFilledQuard();
-		static std::vector<Mesh> LoadFromFile(const std::string& filepath);
 	public:
-		bool HasInstanceArray();
+		bool HasInstanceArray() const;
 		void MakeInstancedArray(const glm::mat4* model_arr, u32 count);
 	public:
 		u32 m_count = 0;

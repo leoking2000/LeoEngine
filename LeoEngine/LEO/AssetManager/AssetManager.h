@@ -19,6 +19,7 @@ namespace LEO
 		~AssetManager();
 	public:
 		u32   AddMesh(DefaultMesh shape);
+		u32   AddMesh(Mesh&& m);
 		void  RemoveMesh(u32 id);
 		Mesh& GetMesh(u32 id);
 	public:

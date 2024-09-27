@@ -1,6 +1,5 @@
 #include <glad/glad.h>
 #include <glm/glm.hpp>
-#include <tiny_obj_loader.h>
 #include "Mesh.h"
 
 struct Vertex
@@ -80,7 +79,7 @@ namespace LEO
 		return *this;
 	}
 
-	void Mesh::Draw()
+	void Mesh::Draw() const
 	{
 		m_vertexArray.Bind();
 		m_indexBuffer.Bind();
@@ -99,7 +98,7 @@ namespace LEO
 		m_indexBuffer.UnBind();
 	}
 
-	bool Mesh::HasInstanceArray()
+	bool Mesh::HasInstanceArray() const
 	{
 		return m_count != 0;
 	}
@@ -343,12 +342,5 @@ namespace LEO
 		mesh.m_layout_size = 1;
 
 		return mesh;
-	}
-
-	std::vector<Mesh> Mesh::LoadFromFile(const std::string& filepath)
-	{
-		LEOASSERT(false, "NOT YET IMPLEMETED!!!");
-
-		return std::vector<Mesh>();
 	}
 }
