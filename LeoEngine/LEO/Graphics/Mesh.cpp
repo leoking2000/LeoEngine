@@ -1,6 +1,6 @@
 #include <glad/glad.h>
 #include <glm/glm.hpp>
-#include <vector>
+#include <tiny_obj_loader.h>
 #include "Mesh.h"
 
 struct Vertex
@@ -8,30 +8,43 @@ struct Vertex
 	glm::vec3 pos;
 	glm::vec2 texCord;
 	glm::vec3 normal;
-	glm::vec3 tangent;
-	glm::vec3 bitangent;
+	//glm::vec3 tangent;
+	//glm::vec3 bitangent;
 
 	bool operator==(const Vertex& rhs)
 	{
 		return pos == rhs.pos &&
 			texCord == rhs.texCord &&
-			normal == rhs.normal &&
-			tangent == rhs.tangent &&
-			bitangent == rhs.bitangent;
+			normal == rhs.normal;//&&
+			//tangent == rhs.tangent &&
+			//bitangent == rhs.bitangent;
 	}
 };
 
 namespace LEO
 {
+	Mesh::Mesh(DefaultMesh shape)
+		:
+		Mesh(GenerateMesh(shape))
+	{}
+
 	Mesh::Mesh(DefaultMesh shape, const glm::mat4* model_arr, u32 count)
 		:
 		Mesh(GenerateMesh(shape))
 	{
-		if (model_arr != nullptr)
-		{
-			MakeInstancedArray(model_arr, count);
-		}
+		LEOASSERT(model_arr != nullptr, "model array is null");
+		LEOASSERT(count != 0, "count can't be 0");
+
+		MakeInstancedArray(model_arr, count);
 	}
+
+	Mesh::Mesh(VertexArray& va, IndexBuffer& ib, u32 layout_size)
+		:
+		m_vertexArray(std::move(va)),
+		m_indexBuffer(std::move(ib)),
+		m_layout_size(layout_size),
+		m_count(0)
+	{}
 
 	Mesh::Mesh(VertexArray& va, IndexBuffer& ib, u32 layout_size, const glm::mat4* model_arr, u32 count)
 		:
@@ -40,10 +53,31 @@ namespace LEO
 		m_layout_size(layout_size),
 		m_count(0)
 	{
-		if (model_arr != nullptr)
-		{
-			MakeInstancedArray(model_arr, count);
-		}
+		LEOASSERT(model_arr != nullptr, "model array is null");
+		LEOASSERT(count != 0, "count can't be 0");
+
+		MakeInstancedArray(model_arr, count);
+	}
+
+	Mesh::Mesh(Mesh&& other)
+		:
+		m_vertexArray(std::move(other.m_vertexArray)),
+		m_indexBuffer(std::move(other.m_indexBuffer)),
+		m_layout_size(other.m_layout_size),
+		m_count(other.m_count)
+	{}
+
+	Mesh& Mesh::operator=(Mesh&& other)
+	{
+		m_vertexArray = std::move(other.m_vertexArray);
+		m_indexBuffer = std::move(other.m_indexBuffer);
+		m_layout_size = other.m_layout_size;
+		m_count = other.m_count;
+
+		m_layout_size = 0;
+		m_count = 0;
+
+		return *this;
 	}
 
 	void Mesh::Draw()
@@ -187,8 +221,8 @@ namespace LEO
 				vertices[i * (prec + 1) + j].normal = glm::vec3(x, y, z);
 
 				// TODO: Caculate tangent and bitangent
-				vertices[i * (prec + 1) + j].tangent = glm::vec3(x, y, z);
-				vertices[i * (prec + 1) + j].bitangent = glm::vec3(x, y, z);
+				//vertices[i * (prec + 1) + j].tangent = glm::vec3(x, y, z);
+				//vertices[i * (prec + 1) + j].bitangent = glm::vec3(x, y, z);
 			}
 		}
 
@@ -209,6 +243,7 @@ namespace LEO
 		}
 
 		std::vector<float> vertex_buffer;
+		vertex_buffer.reserve(numVertices * 8);
 
 		for (Vertex& v : vertices)
 		{
@@ -223,19 +258,19 @@ namespace LEO
 			vertex_buffer.emplace_back(v.normal.y);
 			vertex_buffer.emplace_back(v.normal.z);
 
-			vertex_buffer.emplace_back(v.tangent.x);
-			vertex_buffer.emplace_back(v.tangent.y);
-			vertex_buffer.emplace_back(v.tangent.z);
+			//vertex_buffer.emplace_back(v.tangent.x);
+			//vertex_buffer.emplace_back(v.tangent.y);
+			//vertex_buffer.emplace_back(v.tangent.z);
 
-			vertex_buffer.emplace_back(v.bitangent.x);
-			vertex_buffer.emplace_back(v.bitangent.y);
-			vertex_buffer.emplace_back(v.bitangent.z);
+			//vertex_buffer.emplace_back(v.bitangent.x);
+			//vertex_buffer.emplace_back(v.bitangent.y);
+			//vertex_buffer.emplace_back(v.bitangent.z);
 		}
 
 		VertexBuffer vertexBuffer((const void*)vertex_buffer.data(), (u32)(vertex_buffer.size() * sizeof(float)));
 
-		ElementType arr[5] = { FLOAT3, FLOAT2, FLOAT3_N, FLOAT3_N, FLOAT3_N };
-		Layout<5> layout(arr);
+		ElementType arr[3] = { FLOAT3, FLOAT2, FLOAT3_N };
+		Layout<3> layout(arr);
 
 		VertexArray vertexArray;
 		vertexArray.AddBuffer(vertexBuffer, layout);
@@ -243,7 +278,7 @@ namespace LEO
 
 		IndexBuffer indexBuffer(indices.data(), (u32)indices.size());
 
-		Mesh mesh{ vertexArray, indexBuffer, 5 };
+		Mesh mesh{ vertexArray, indexBuffer, 3 };
 
 		return mesh;
 	}
@@ -308,5 +343,12 @@ namespace LEO
 		mesh.m_layout_size = 1;
 
 		return mesh;
+	}
+
+	std::vector<Mesh> Mesh::LoadFromFile(const std::string& filepath)
+	{
+		LEOASSERT(false, "NOT YET IMPLEMETED!!!");
+
+		return std::vector<Mesh>();
 	}
 }

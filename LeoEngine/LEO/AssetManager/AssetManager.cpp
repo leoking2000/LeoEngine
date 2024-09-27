@@ -1,7 +1,6 @@
 #include "AssetManager.h"
 #include "../Utilities/FileUtilities.h"
 #include "stb/stb_image.h"
-#include "CPUMesh.h"
 
 namespace LEO
 {
@@ -14,10 +13,9 @@ namespace LEO
     }
 
 
-    u32 AssetManager::AddMesh(DefaultMesh shape, glm::mat4* model_arr, u32 count)
+    u32 AssetManager::AddMesh(DefaultMesh shape)
     {
-        auto inserted = m_mesh_map.insert(std::make_pair(m_insertedAssetID, 
-            Mesh{shape, model_arr, count}));
+        auto inserted = m_mesh_map.insert(std::make_pair(m_insertedAssetID, Mesh{shape}));
         m_insertedAssetID++;
 
         return m_insertedAssetID - 1;
@@ -43,24 +41,24 @@ namespace LEO
         return m_insertedAssetID - 1;
     }
 
-    u32 AssetManager::AddModel(const std::string& filepath)
-    {
-        std::vector<CPUMesh> cpu_model = CPUMesh::Load(filepath, *this);
+    //u32 AssetManager::AddModel(const std::string& filepath)
+    //{
+    //    std::vector<CPUMesh> cpu_model = CPUMesh::Load(filepath, *this);
 
-        u32 model_id = AddModel();
-        Model& model = GetModel(model_id);
+    //    u32 model_id = AddModel();
+    //    Model& model = GetModel(model_id);
 
-        for (CPUMesh& m : cpu_model)
-        {
-            // add the mesh
-            auto inserted = m_mesh_map.insert(std::make_pair(m_insertedAssetID, CPUMesh::Convert(m)));
-            m_insertedAssetID++;
-            // add the sub model to the model
-            model.AddSubModel({ m_insertedAssetID - 1, m.material });
-        }
+    //    for (CPUMesh& m : cpu_model)
+    //    {
+    //        // add the mesh
+    //        auto inserted = m_mesh_map.insert(std::make_pair(m_insertedAssetID, CPUMesh::Convert(m)));
+    //        m_insertedAssetID++;
+    //        // add the sub model to the model
+    //        model.AddSubModel({ m_insertedAssetID - 1, m.material });
+    //    }
 
-        return model_id;
-    }
+    //    return model_id;
+    //}
 
     u32 AssetManager::AddModel(u32 mesh, Material mat)
     {
@@ -134,15 +132,7 @@ namespace LEO
 
     u32 AssetManager::AddShader(const std::string& filepath)
     {
-        std::string vert_source = ReadFile(filepath + ".vert");
-        std::string geom_source = ReadFile(filepath + ".geom");
-        std::string frag_source = ReadFile(filepath + ".frag");
-
-        LEOASSERT(vert_source != "", "Vertex shader missing!");
-        LEOASSERT(frag_source != "", "Fragment shader missing!");
-
-        auto inserted = m_shader_map.insert(std::make_pair(m_insertedAssetID, ShaderProgram(
-            vert_source.c_str(), ((geom_source == "") ? nullptr : geom_source.c_str()), frag_source.c_str())));
+        auto inserted = m_shader_map.insert(std::make_pair(m_insertedAssetID, ShaderProgram(filepath)));
 
         m_insertedAssetID++;
 

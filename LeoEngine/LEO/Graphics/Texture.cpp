@@ -72,6 +72,9 @@ namespace LEO
 
     void Texture::SetFiltering(TextureMinFiltering min_filter, TextureMagFiltering mag_filter)
     {
+        m_params.min_filter = min_filter;
+        m_params.mag_filter = mag_filter;
+
         glBindTexture(TYPE[m_params.dimensions], m_id);
         m_minimap = false;
 
@@ -116,6 +119,9 @@ namespace LEO
 
     void Texture::SetWrapping(TextureWrapping S, TextureWrapping T)
     {
+        m_params.wrapping_s = S;
+        m_params.wrapping_t = T;
+
         glBindTexture(TYPE[m_params.dimensions], m_id);
 
         switch (m_params.wrapping_s)
@@ -225,6 +231,10 @@ namespace LEO
         if (m_minimap)
         {
             glGenerateMipmap(TYPE[m_params.dimensions]);
+
+            //GLfloat anisoSetting = 0.0f; 
+            //glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &anisoSetting); 
+            //glTexParameterf(TYPE[m_params.dimensions], GL_TEXTURE_MAX_ANISOTROPY_EXT, anisoSetting);
         }
 
         glBindTexture(TYPE[m_params.dimensions], 0);

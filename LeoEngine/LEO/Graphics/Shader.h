@@ -7,13 +7,10 @@
 
 namespace LEO
 {
-	/*
-	* Represents a Shader program
-	*/
 	class ShaderProgram
 	{
 	public:
-		ShaderProgram();
+		ShaderProgram(const std::string& filepath);
 		ShaderProgram(const char* vertSrc, const char* fragSrc);
 		ShaderProgram(const char* vertSrc, const char* geoSrc, const char* fragSrc);
 
@@ -25,21 +22,19 @@ namespace LEO
 
 		~ShaderProgram();
 	public:
-		bool IsValid();
-
 		/// <summary>
-		/// tries to recreate the shader, if it fails returns true without making them shader invalid.
+		/// tries to recreate the shader, if it fails returns false without making the shader invalid.
 		/// </summary>
 		bool Reload(const char* vertexSrc, const char* geoSrc, const char* fragSrc);
 
 		/// <summary>
-		/// tries to recreate the shader, if it fails returns true without making them shader invalid.
+		/// tries to recreate the shader, if it fails returns false without making the shader invalid.
 		/// </summary>
 		bool Reload(const char* vertexSrc, const char* fragSrc);
-
+	public:
 		void Bind() const;
 		void UnBind() const;
-
+	public:
 		bool SetUniform(const std::string& name, float num) const;
 		bool SetUniform(const std::string& name, glm::vec2 a) const;
 		bool SetUniform(const std::string& name, glm::vec3 a) const;
@@ -50,13 +45,14 @@ namespace LEO
 		bool SetUniform(const std::string& name, unsigned int i) const;
 		bool SetUniform(const std::string& name, const glm::mat4& mat) const;
 		bool SetUniform(const std::string& name, const glm::mat3& mat) const;
-
+	public:
 		bool SetUniform(const std::string& name, const std::vector<glm::vec2>& vec_arr, u32 size);
 		bool SetUniform(const std::string& name, const std::vector<glm::vec3>& vec_arr, u32 size);
 	private:
 		i32 GetLocation(const std::string& name) const;
+		bool IsValid() const;
 	private:
-		u32 m_program_id; // the shader program id OpenGl gives
+		u32 m_program_id;
 		mutable std::unordered_map<std::string, i32> m_uniforms; // storing uniforms locations
 	};
 }

@@ -1,5 +1,6 @@
 #include <glad/glad.h>
 #include "../Utilities/Log.h"
+#include "../Utilities/FileUtilities.h"
 #include "Shader.h"
 
 u32 CompileShader(const char* source, u32 type);
@@ -7,10 +8,18 @@ u32 CreateShaderProgramFromSource(const char* vertSrc, const char* geoSrc, const
 
 namespace LEO
 {
-	ShaderProgram::ShaderProgram()
+	ShaderProgram::ShaderProgram(const std::string& filepath)
 		:
 		m_program_id(0)
 	{
+		std::string vert_source = ReadFile(filepath + ".vert");
+		std::string geom_source = ReadFile(filepath + ".geom");
+		std::string frag_source = ReadFile(filepath + ".frag");
+
+		LEOASSERT(vert_source != "", "Vertex shader missing!");
+		LEOASSERT(frag_source != "", "Fragment shader missing!");
+
+		Reload(vert_source.c_str(), ((geom_source == "") ? nullptr : geom_source.c_str()), frag_source.c_str());
 	}
 
 	ShaderProgram::ShaderProgram(const char* vertSrc, const char* fragSrc)
@@ -49,11 +58,6 @@ namespace LEO
 	ShaderProgram::~ShaderProgram()
 	{
 		glDeleteProgram(m_program_id);
-	}
-
-	bool ShaderProgram::IsValid()
-	{
-		return m_program_id != 0;
 	}
 
 	bool ShaderProgram::Reload(const char* vertexSrc, const char* geoSrc, const char* fragSrc)
@@ -306,6 +310,11 @@ namespace LEO
 		}
 
 		return loc;
+	}
+
+	bool ShaderProgram::IsValid() const
+	{
+		return m_program_id != 0;
 	}
 }
 

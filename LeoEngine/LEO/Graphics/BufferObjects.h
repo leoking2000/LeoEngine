@@ -156,7 +156,7 @@ namespace LEO
 		VertexArray();
 
 		VertexArray(const VertexArray& other) = delete;
-		VertexArray& operator=(const VertexArray) = delete;
+		VertexArray& operator=(const VertexArray&) = delete;
 
 		VertexArray(VertexArray&& other);
 		VertexArray& operator=(VertexArray&& other);

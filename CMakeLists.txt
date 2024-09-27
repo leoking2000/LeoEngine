@@ -19,7 +19,7 @@ add_subdirectory(thirdparty/glad)          # opengl loader
 add_subdirectory(thirdparty/glm)           # math library
 add_subdirectory(thirdparty/stb)           # the stb lib
 add_subdirectory(thirdparty/imgui-docking) # ui
-add_subdirectory(thirdparty/assimp)        # 3D Model loading library
+add_subdirectory(thirdparty/tinyobjloader) # 3D Model loading library
 
 ###########################
 

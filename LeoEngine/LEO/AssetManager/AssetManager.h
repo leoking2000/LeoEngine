@@ -18,13 +18,13 @@ namespace LEO
 
 		~AssetManager();
 	public:
-		u32   AddMesh(DefaultMesh shape, glm::mat4* model_arr = nullptr, u32 count = 0);
+		u32   AddMesh(DefaultMesh shape);
 		void  RemoveMesh(u32 id);
 		Mesh& GetMesh(u32 id);
 	public:
 		u32 AddModel();
 		u32 AddModel(u32 mesh, Material mat = {});
-		u32 AddModel(const std::string& filepath);
+		//u32 AddModel(const std::string& filepath);
 		void RemoveModel(u32 id);
 		Model& GetModel(u32 id);
 	public:

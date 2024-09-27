@@ -1,4 +1,5 @@
 #pragma once
+#include <string>
 #include "BufferObjects.h"
 
 namespace LEO
@@ -14,8 +15,20 @@ namespace LEO
 	class Mesh
 	{
 	public:
-		Mesh(DefaultMesh shape, const glm::mat4* model_arr = nullptr, u32 count = 0);
-		Mesh(VertexArray& va, IndexBuffer& ib, u32 layout_size, const glm::mat4* model_arr = nullptr, u32 count = 0);
+		Mesh(DefaultMesh shape);
+		Mesh(DefaultMesh shape, const glm::mat4* model_arr, u32 count);
+
+		Mesh(VertexArray& va, IndexBuffer& ib, u32 layout_size);
+		Mesh(VertexArray& va, IndexBuffer& ib, u32 layout_size, const glm::mat4* model_arr, u32 count);
+
+		Mesh(const Mesh& other) = delete;
+		Mesh& operator=(const Mesh&) = delete;
+
+		Mesh(Mesh&& other);
+		Mesh& operator=(Mesh&& other);
+
+		~Mesh() = default;
+	public:
 		void Draw();
 	public:
 		static Mesh GenerateMesh(DefaultMesh shape);
@@ -23,6 +36,7 @@ namespace LEO
 		static Mesh GenarateSphere(u32 prec = 48);
 		static Mesh GenarateQuard(u32 repet = 1);
 		static Mesh GenarateScreenFilledQuard();
+		static std::vector<Mesh> LoadFromFile(const std::string& filepath);
 	public:
 		bool HasInstanceArray();
 		void MakeInstancedArray(const glm::mat4* model_arr, u32 count);
