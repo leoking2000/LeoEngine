@@ -16,20 +16,23 @@ namespace LEO
 	class FrameBuffer
 	{
 	public:
-		// for 3D Texture
-		FrameBuffer(u32 width, u32 height, u32 depth, u32 colorAttachmentCount,
-			TextureMinFiltering min_filter, TextureMagFiltering mag_filter,
-			TextureFormat format = TextureFormat::RGBA32F);
+		// for 2D Texture
+		FrameBuffer(u32 width, u32 height, u32 colorAttachmentCount = 1,
+			TextureFormat format = TextureFormat::RGBA32F, FrameBufferMode fbt = FrameBufferMode::ColorAttachment,
+			TextureMinFiltering min_filter = TextureMinFiltering::MIN_NEAREST,
+			TextureMagFiltering mag_filter = TextureMagFiltering::MAG_NEAREST);
 
-		FrameBuffer(u32 width, u32 height, u32 colorAttachmentCount,
-			TextureMinFiltering min_filter, TextureMagFiltering mag_filter,
-			TextureFormat format = TextureFormat::RGBA32F, FrameBufferMode fbt = FrameBufferMode::ColorAttachment);
+		// for 3D Texture
+		FrameBuffer(u32 width, u32 height, u32 depth, u32 colorAttachmentCount = 1,
+			TextureFormat format = TextureFormat::RGBA32F,
+			TextureMinFiltering min_filter = TextureMinFiltering::MIN_NEAREST,
+			TextureMagFiltering mag_filter = TextureMagFiltering::MAG_NEAREST);
 
 		FrameBuffer(const FrameBuffer&) = delete;
 		FrameBuffer& operator=(const FrameBuffer&) = delete;
 
 		FrameBuffer(FrameBuffer&& other) noexcept;
-		//FrameBuffer& operator=(const FrameBuffer& other);
+		FrameBuffer& operator=(FrameBuffer&& other) noexcept;
 
 		~FrameBuffer();
 	public:

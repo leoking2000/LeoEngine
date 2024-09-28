@@ -5,28 +5,28 @@
 
 namespace LEO
 {
-	FrameBuffer::FrameBuffer(u32 width, u32 height, u32 depth, u32 colorAttachmentCount, 
-		TextureMinFiltering min_filter, TextureMagFiltering mag_filter, TextureFormat format)
-	{
-		InitColorAttachmentMode3D(width, height, depth, colorAttachmentCount, min_filter, mag_filter, format);
-	}
+    FrameBuffer::FrameBuffer(u32 width, u32 height, u32 colorAttachmentCount, 
+        TextureFormat format, FrameBufferMode fbt, 
+        TextureMinFiltering min_filter, TextureMagFiltering mag_filter)
+    {
+        switch (fbt)
+        {
+        case LEO::FrameBufferMode::ColorAttachment:
+            InitColorAttachmentMode(width, height, colorAttachmentCount, min_filter, mag_filter, format);
+            break;
+        case LEO::FrameBufferMode::Layered:
+            InitLayered(width, height, colorAttachmentCount, min_filter, mag_filter, format);
+            break;
+        case LEO::FrameBufferMode::Texture3D:
+            InitTexture3D(width, height, colorAttachmentCount, min_filter, mag_filter, format);
+            break;
+        }
+    }
 
-	LEO::FrameBuffer::FrameBuffer(u32 width, u32 height, u32 colorAttachmentCount, 
-		TextureMinFiltering min_filter, TextureMagFiltering mag_filter, TextureFormat format, FrameBufferMode fbt)
-	{
-		switch (fbt)
-		{
-		case LEO::FrameBufferMode::ColorAttachment:
-			InitColorAttachmentMode(width, height, colorAttachmentCount, min_filter, mag_filter, format);
-			break;
-		case LEO::FrameBufferMode::Layered:
-			InitLayered(width, height, colorAttachmentCount, min_filter, mag_filter, format);
-			break;
-		case LEO::FrameBufferMode::Texture3D:
-			InitTexture3D(width, height, colorAttachmentCount, min_filter, mag_filter, format);
-			break;
-		}
-	}
+    FrameBuffer::FrameBuffer(u32 width, u32 height, u32 depth, u32 colorAttachmentCount, TextureFormat format, TextureMinFiltering min_filter, TextureMagFiltering mag_filter)
+    {
+        InitColorAttachmentMode3D(width, height, depth, colorAttachmentCount, min_filter, mag_filter, format);
+    }
 
 	FrameBuffer::FrameBuffer(FrameBuffer&& other) noexcept
 		:
@@ -42,6 +42,36 @@ namespace LEO
 		other.m_depth = 0;
 		other.m_id = 0;
 	}
+
+    FrameBuffer& FrameBuffer::operator=(FrameBuffer&& other) noexcept
+    {
+        m_color_attachments.clear();
+
+        if (m_depth_texture)
+        {
+            glDeleteTextures(1, &m_depth_texture->m_id);
+            m_depth_texture->m_id = 0;
+        }
+
+        glDeleteFramebuffers(1, &m_id);
+
+        m_id = other.m_id;
+        other.m_id = 0;
+
+        m_width = other.m_width;
+        other.m_width = 0;
+
+        m_height = other.m_height;
+        other.m_height = 0;
+
+        m_depth = other.m_depth;
+        other.m_depth = 0;
+
+        m_depth_texture = std::move(other.m_depth_texture);
+        m_color_attachments = std::move(other.m_color_attachments);
+
+        return *this;
+    }
 
 	LEO::FrameBuffer::~FrameBuffer()
 	{

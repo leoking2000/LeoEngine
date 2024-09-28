@@ -1,7 +1,7 @@
 #pragma once
 
 #if PRODUCTION_BUILD
-#define LEODEBUG 0
+#define OPENGL_DEBUG 0
 #else
-#define LEODEBUG 1
+#define OPENGL_DEBUG 1
 #endif

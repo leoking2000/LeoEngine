@@ -41,7 +41,7 @@ namespace LEO
 			LEOASSERT(false, "Failed to initialize GLAD");
 		}
 
-#if LEODEBUG
+#if OPENGL_DEBUG
         int flags; 
         glGetIntegerv(GL_CONTEXT_FLAGS, &flags);
 
