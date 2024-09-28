@@ -1,6 +1,7 @@
 #include <tiny_obj_loader.h>
-#include "Model.h"
+#include "../Utilities/FileUtilities.h"
 #include "../AssetManager/AssetManager.h"
+#include "Model.h"
 
 #define U_PROJECTON_VIEW_MATRIX "u_proj_view_matrix"
 #define U_MODEL_MATRIX          "u_model_matrix"
@@ -85,10 +86,10 @@ namespace LEO
 		std::string warn;
 		std::string err;
 
-		bool ret = tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, filepath.c_str());
+		bool ret = tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, filepath.c_str(), DirNameOf(filepath).c_str());
 
 		if (!warn.empty()) {
-			LOGWARN("{}", warn);
+			//LOGWARN("{}", warn);
 		}
 
 		if (!err.empty()) {
@@ -96,7 +97,7 @@ namespace LEO
 		}
 
 		if (!ret) {
-			LEOASSERT(ret, "Failed Loading Model {}", filepath);
+			LOGERROR("Failed Loading Model {}", filepath);
 			return;
 		}
 
@@ -107,11 +108,8 @@ namespace LEO
 		for (size_t s = 0; s < shapes.size(); s++) 
 		{
 			index_buffer.clear();
-			for (auto& i : shapes[s].mesh.indices)
-			{
-				index_buffer.push_back(i.vertex_index);
-			}
-
+			int k = 0;
+			int mat_id = -1;
 			vertex_buffer.clear();
 			// Loop over faces(polygon)
 			size_t index_offset = 0;
@@ -152,18 +150,22 @@ namespace LEO
 						vertex_buffer.push_back(0.0f);
 						vertex_buffer.push_back(0.0f);
 					}
+					index_buffer.push_back(k++);
 				}
 
 				index_offset += fv;
+				mat_id = shapes[s].mesh.material_ids[f];
 			}
 
 			// per-face material
-			tinyobj::material_t matririal = materials[shapes[s].mesh.material_ids[0]];
-
 			Material mat;
-			if (matririal.diffuse_texname != "")
+			if (mat_id >= 0)
 			{
-				mat.AlbedoMap = m_assetManager.AddTextureFromFile(filepath + matririal.diffuse_texname);
+				tinyobj::material_t matririal = materials[shapes[s].mesh.material_ids[0]];
+				if (matririal.diffuse_texname != "")
+				{
+					mat.AlbedoMap = m_assetManager.AddTextureFromFile(DirNameOf(filepath) + "/" + matririal.diffuse_texname);
+				}
 			}
 
 			VertexBuffer vertexBuffer((const void*)vertex_buffer.data(), (u32)(vertex_buffer.size() * sizeof(float)));
