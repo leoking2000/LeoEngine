@@ -10,7 +10,7 @@ LEO::ApplicationParameters GetUserApplicationParameters(int argc, char* argv[])
 	p.height = 600;
 	p.isResizable = true;
 	p.vsync = true;
-	p.startScene = std::make_shared<Game>();
+	p.createScene = []() { return std::make_unique<Game>(); };
 
 	return p;
 }

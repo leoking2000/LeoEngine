@@ -1,4 +1,5 @@
 #pragma once
+#include <functional>
 #include "../Renderer/Renderer.h"
 #include "../Scene/SceneManager.h"
 #include "Window/Window.h"
@@ -8,6 +9,8 @@ namespace LEO
 {
 	void EngineInitialization();
 	void EngineTerminate();
+
+	typedef std::function<std::unique_ptr<Scene>()> CreateStartSceneCallBack;
 
 	struct ApplicationParameters
 	{
@@ -27,7 +30,7 @@ namespace LEO
 		f32 min_z = 0.1f;
 		f32 max_z = 100.0f;
 
-		std::shared_ptr<Scene> startScene;
+		CreateStartSceneCallBack createScene;
 
 		// Log settings	
 		LEO::LogLevel logLevel = LEO::LogLevel::INFO;
@@ -41,7 +44,7 @@ namespace LEO
 		Application(const Application&) = delete;
 		Application& operator=(const Application&) = delete;
 	public:
-		void Run();
+		void Run(CreateStartSceneCallBack createScene);
 	private:
 		void AddStartScene(std::shared_ptr<Scene> start_scene);
 	private:

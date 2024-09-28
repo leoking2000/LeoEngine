@@ -68,12 +68,12 @@ namespace LEO
 
 			m_sceneManager.OnEvent(e);
 		});
-
-		AddStartScene(std::move(params.startScene));
 	}
 
-	void Application::Run()
+	void Application::Run(CreateStartSceneCallBack createScene)
 	{	
+		AddStartScene(createScene());
+
 		f32 deltaTime;
 		f32 start = m_window.Time();
 		f32 end = start;

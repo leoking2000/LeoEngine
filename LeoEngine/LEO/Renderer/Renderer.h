@@ -45,6 +45,6 @@ namespace LEO
 		// light
 		f32 m_ambient_strength = 0.1f;
 	private:
-		u32 m_shader;
+		LEO::ShaderProgram m_shader;
 	};
 }

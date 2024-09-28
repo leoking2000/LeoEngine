@@ -9,7 +9,7 @@ namespace LEO
 		{
 			ApplicationParameters p = GetUserApplicationParameters(argc, argv);
 			Application app(p);
-			app.Run();
+			app.Run(p.createScene);
 		}
 
 		LEO::EngineTerminate();

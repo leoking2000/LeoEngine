@@ -4,6 +4,6 @@
 LEO::ApplicationParameters GetUserApplicationParameters(int argc, char* argv[])
 {
 	LEO::ApplicationParameters p;
-	p.startScene = std::make_shared<Triliza>();
+	p.createScene = []() { return std::make_unique<Triliza>(); };
 	return p;
 }

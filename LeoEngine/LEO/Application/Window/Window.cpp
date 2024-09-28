@@ -1,5 +1,6 @@
 #include "../../Utilities/defines.h"
 #include "../../Utilities/Log.h"
+#include "../../Graphics/LeoGraphics.h"
 #include "Window.h"
 #include <GLFW/glfw3.h>
 
@@ -96,6 +97,8 @@ namespace LEO
 
 		glfwMakeContextCurrent(M_GLFW_WINDOW);
 		glfwSwapInterval(vsync ? 1 : 0);
+
+		LEO::GraphicsInitialization();
 	}
 
 	Window::~Window()

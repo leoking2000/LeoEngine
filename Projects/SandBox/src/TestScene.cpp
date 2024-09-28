@@ -74,10 +74,10 @@ void TestScene::SetUpScene()
 	m_drawables.emplace_back(GetAssets().AddModel(), GetAssets());
 	//m_drawables[2].model().LoadFromFile(RESOURCES_PATH"sandbox/factory/factory.obj");
 	
-	m_drawables[2].model().LoadFromFile(RESOURCES_PATH"sandbox/dragon/dragon.obj");
-	m_drawables[2].material().Albedo = glm::vec3(0.52f, 0.81f, 0.93f);
-	m_drawables[2].trasform().scale = glm::vec3(4.0f);
-	m_drawables[2].trasform().eulerRot = glm::vec3(0.0f, 90.0f, 0.0f);
+	//m_drawables[2].model().LoadFromFile(RESOURCES_PATH"sandbox/dragon/dragon.obj");
+	//m_drawables[2].material().Albedo = glm::vec3(0.52f, 0.81f, 0.93f);
+	//m_drawables[2].trasform().scale = glm::vec3(4.0f);
+	//m_drawables[2].trasform().eulerRot = glm::vec3(0.0f, 90.0f, 0.0f);
 
 	// set up camera
 	GetCamera().pos.z = 10.0f;
