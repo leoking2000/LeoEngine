@@ -1,6 +1,5 @@
 #pragma once
-#include "../AssetManager/AssetManager.h"
-#include "Transform.h"
+#include "../AssetManager/Model.h"
 
 
 namespace LEO
@@ -8,18 +7,16 @@ namespace LEO
 	class Drawable
 	{
 	public:
-		Drawable(u32 model, AssetManager& assetManager);
+		Drawable(Model& m);
 	public:
 		Transform& trasform();
 		Material&  material(u32 i = 0);
 		Mesh&      mesh(u32 i = 0);
 		Model&     model();
 	public:
-		void       Draw(const ShaderProgram& shader, const glm::mat4& proj_view, bool use_mat) const;
+		void       Draw(const ShaderProgram& shader, const glm::mat4& proj_view, bool use_mat);
 	private:
 		Transform m_trasfrom;
-		u32 m_model;
-	private:
-		AssetManager& m_assetManager;
+		Model m_model;
 	};
 }

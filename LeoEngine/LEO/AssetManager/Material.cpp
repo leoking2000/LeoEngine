@@ -1,5 +1,4 @@
 #include "Material.h"
-#include "../AssetManager/AssetManager.h"
 
 #define U_ALBEDO          "u_albedo"
 #define U_ALBEDO_MAP      "u_albedoMap"
@@ -11,25 +10,20 @@
 
 namespace LEO
 {
-	void Material::SetMaterialUniforms(const ShaderProgram& shader, AssetManager& assetManager) const
+	void Material::SetMaterialUniforms() const
 	{
-		if (AlbedoMap != 0)
+		if (MaterialShader.IsNull()) return;
+
+		if (AlbedoMap)
 		{
-			assetManager.GetTexture(AlbedoMap).Bind(0);
-			shader.SetUniform(U_ALBEDO_MAP, 0);
+			AlbedoMap->Bind(0);
+			MaterialShader->SetUniform(U_ALBEDO_MAP, 0);
 		}
 
-		shader.SetUniform(U_ALBEDO, Albedo);
-		shader.SetUniform(U_HAS_ALBEDO, AlbedoMap == 0 ? 0 : 1);
+		MaterialShader->SetUniform(U_ALBEDO, Albedo);
+		MaterialShader->SetUniform(U_HAS_ALBEDO, AlbedoMap.IsNull() ? 0 : 1);
 
-		//if (NormalMap != 0)
-		//{
-			//assetManager.GetTexture(NormalMap).Bind(1);
-			//shader.SetUniform(U_NORMAL_MAP, 1);
-		//}
-		//shader.SetUniform(U_HAS_NORMAL_MAP, NormalMap == 0 ? 0 : 1);
-
-		//shader.SetUniform(U_ROUGHNESS, Roughness);
-		//shader.SetUniform(U_METALLIC, Metallic);
+		MaterialShader->SetUniform(U_ROUGHNESS, Roughness);
+		MaterialShader->SetUniform(U_METALLIC, Metallic);
 	}
 }

@@ -2,3 +2,4 @@
 // such as names of functions and macros.
 // For more information see https://go.microsoft.com/fwlink/?linkid=865984
 #define EVENT_CLASS(name, type, __VA_ARGS__) class name : public Event { public: name() = default; EVENT_CLASS_METHODS(type) __VA_ARGS__ }
+#define ZZ_ASSET_CLASS(name, type, get) class name {  public: name(assetID id, AssetManager* manager) : m_asset_id(id), m_manager(manager) {} ZZ_ASSET_ARROW_OPERATOR(type, get) ZZ_ASSET_GET(type, get) private: assetID m_asset_id; AssetManager* m_manager;}

@@ -1,7 +1,6 @@
 #pragma once
 #include <glm/glm.hpp>
 #include "../Utilities/Types.h"
-#include "../AssetManager/AssetManager.h"
 #include "../Scene/Event.h"
 #include "../SceneData/Camera.h"
 #include "../SceneData/Drawable.h"
@@ -28,7 +27,7 @@ namespace LEO
 	class Renderer
 	{
 	public:
-		Renderer(const RendererParameters& params, AssetManager& assetManager);
+		Renderer(const RendererParameters& params);
 
 		Renderer(const Renderer&) = delete;
 		Renderer& operator=(const Renderer&) = delete;
@@ -40,7 +39,6 @@ namespace LEO
 	public:
 		Camera& GetCamera();
 	private:
-		AssetManager& m_assetManager;
 		Camera m_camera;
 		// light
 		f32 m_ambient_strength = 0.1f;

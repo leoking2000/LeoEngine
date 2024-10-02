@@ -22,15 +22,9 @@ namespace LEO
 
 		~ShaderProgram();
 	public:
-		/// <summary>
-		/// tries to recreate the shader, if it fails returns false without making the shader invalid.
-		/// </summary>
 		bool Reload(const char* vertexSrc, const char* geoSrc, const char* fragSrc);
-
-		/// <summary>
-		/// tries to recreate the shader, if it fails returns false without making the shader invalid.
-		/// </summary>
 		bool Reload(const char* vertexSrc, const char* fragSrc);
+		bool Reload(const std::string& filepath);
 	public:
 		void Bind() const;
 		void UnBind() const;

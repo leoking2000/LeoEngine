@@ -160,12 +160,12 @@ namespace LEO
 
         if (m_depth_texture)
         {
-            m_depth_texture->Resize(Texture::TexSize(m_width, m_height, 0));
+            m_depth_texture->Resize(glm::uvec3(m_width, m_height, 0));
         }
 
         for (Texture& tex : m_color_attachments)
         {
-            tex.Resize(Texture::TexSize(m_width, m_height, 0));
+            tex.Resize(glm::uvec3(m_width, m_height, 0));
         }
 
         GLenum status = CheckFramebufferStatus(m_id);
@@ -205,7 +205,7 @@ namespace LEO
 
         for (u8 i = 0; i < colorAttachmentCount; i++)
         {
-            Texture& tex = m_color_attachments.emplace_back(DIM_2D, Texture::TexSize(m_width, m_height, 0), format,
+            Texture& tex = m_color_attachments.emplace_back(DIM_2D, glm::uvec3(m_width, m_height, 0), format,
                 min_filter, mag_filter,
                 TextureWrapping::CLAMP_TO_EDGE, TextureWrapping::CLAMP_TO_EDGE, (u8*)0u
             );
@@ -238,7 +238,7 @@ namespace LEO
 
         for (u8 i = 0; i < colorAttachmentCount; i++)
         {
-            Texture& tex = m_color_attachments.emplace_back(DIM_3D, Texture::TexSize(m_width, m_height, m_depth), format,
+            Texture& tex = m_color_attachments.emplace_back(DIM_3D, glm::uvec3(m_width, m_height, m_depth), format,
                 min_filter, mag_filter,
                 TextureWrapping::CLAMP_TO_EDGE, TextureWrapping::CLAMP_TO_EDGE, (u8*)0u
             );
@@ -271,7 +271,7 @@ namespace LEO
 
         colorAttachmentCount = CheckColorAttachmentNumber(colorAttachmentCount);
 
-        Texture& tex = m_color_attachments.emplace_back(DIM_2D_ARRAY, Texture::TexSize(m_width, m_height, colorAttachmentCount), format,
+        Texture& tex = m_color_attachments.emplace_back(DIM_2D_ARRAY, glm::uvec3(m_width, m_height, colorAttachmentCount), format,
             min_filter, mag_filter,
             TextureWrapping::CLAMP_TO_EDGE, TextureWrapping::CLAMP_TO_EDGE, (u8*)0u
         );
@@ -292,7 +292,7 @@ namespace LEO
         glGenFramebuffers(1, &m_id);
         glBindFramebuffer(GL_FRAMEBUFFER, m_id);
 
-        Texture& tex = m_color_attachments.emplace_back(DIM_3D, Texture::TexSize(m_width, m_height, m_depth), format,
+        Texture& tex = m_color_attachments.emplace_back(DIM_3D, glm::uvec3(m_width, m_height, m_depth), format,
             min_filter, mag_filter,
             TextureWrapping::CLAMP_TO_EDGE, TextureWrapping::CLAMP_TO_EDGE, (u8*)0u
         );

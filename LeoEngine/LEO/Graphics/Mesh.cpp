@@ -27,16 +27,6 @@ namespace LEO
 		Mesh(GenerateMesh(shape))
 	{}
 
-	Mesh::Mesh(DefaultMesh shape, const glm::mat4* model_arr, u32 count)
-		:
-		Mesh(GenerateMesh(shape))
-	{
-		LEOASSERT(model_arr != nullptr, "model array is null");
-		LEOASSERT(count != 0, "count can't be 0");
-
-		MakeInstancedArray(model_arr, count);
-	}
-
 	Mesh::Mesh(VertexArray& va, IndexBuffer& ib, u32 layout_size)
 		:
 		m_vertexArray(std::move(va)),
@@ -45,20 +35,9 @@ namespace LEO
 		m_count(0)
 	{}
 
-	Mesh::Mesh(VertexArray& va, IndexBuffer& ib, u32 layout_size, const glm::mat4* model_arr, u32 count)
-		:
-		m_vertexArray(std::move(va)),
-		m_indexBuffer(std::move(ib)),
-		m_layout_size(layout_size),
-		m_count(0)
-	{
-		LEOASSERT(model_arr != nullptr, "model array is null");
-		LEOASSERT(count != 0, "count can't be 0");
 
-		MakeInstancedArray(model_arr, count);
-	}
 
-	Mesh::Mesh(Mesh&& other)
+	Mesh::Mesh(Mesh&& other) noexcept
 		:
 		m_vertexArray(std::move(other.m_vertexArray)),
 		m_indexBuffer(std::move(other.m_indexBuffer)),
@@ -66,7 +45,7 @@ namespace LEO
 		m_count(other.m_count)
 	{}
 
-	Mesh& Mesh::operator=(Mesh&& other)
+	Mesh& Mesh::operator=(Mesh&& other) noexcept
 	{
 		m_vertexArray = std::move(other.m_vertexArray);
 		m_indexBuffer = std::move(other.m_indexBuffer);
@@ -78,6 +57,7 @@ namespace LEO
 
 		return *this;
 	}
+
 
 	void Mesh::Draw() const
 	{

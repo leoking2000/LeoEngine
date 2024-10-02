@@ -20,7 +20,7 @@ namespace LEO
     {}
 
     Texture::Texture(
-        TextureDimensions dimensions, TexSize size,
+        TextureDimensions dimensions, glm::uvec3 size,
         TextureFormat format,
         TextureMinFiltering min_filter, TextureMagFiltering mag_filter,
         TextureWrapping S, TextureWrapping T, u8* data
@@ -240,7 +240,7 @@ namespace LEO
         glBindTexture(TYPE[m_params.dimensions], 0);
     }
 
-    void Texture::Resize(const TexSize& new_size)
+    void Texture::Resize(const glm::uvec3& new_size)
     {
         if (IsTexSizeValid(new_size) == false)
         {
@@ -251,7 +251,7 @@ namespace LEO
         SetImageData(nullptr, m_params.format);
     }
 
-    bool Texture::IsTexSizeValid(const TexSize& new_size) const
+    bool Texture::IsTexSizeValid(const glm::uvec3& new_size) const
     {
         bool isValid = false;
 

@@ -12,14 +12,7 @@ namespace LEO
 		:
 		m_program_id(0)
 	{
-		std::string vert_source = ReadFile(filepath + ".vert");
-		std::string geom_source = ReadFile(filepath + ".geom");
-		std::string frag_source = ReadFile(filepath + ".frag");
-
-		LEOASSERT(vert_source != "", "Vertex shader missing!");
-		LEOASSERT(frag_source != "", "Fragment shader missing!");
-
-		Reload(vert_source.c_str(), ((geom_source == "") ? nullptr : geom_source.c_str()), frag_source.c_str());
+		Reload(filepath);
 	}
 
 	ShaderProgram::ShaderProgram(const char* vertSrc, const char* fragSrc)
@@ -82,6 +75,18 @@ namespace LEO
 	bool ShaderProgram::Reload(const char* vertexSrc, const char* fragSrc)
 	{
 		return Reload(vertexSrc, nullptr, fragSrc);
+	}
+
+	bool ShaderProgram::Reload(const std::string& filepath)
+	{
+		std::string vert_source = ReadFile(filepath + ".vert");
+		std::string geom_source = ReadFile(filepath + ".geom");
+		std::string frag_source = ReadFile(filepath + ".frag");
+
+		LEOASSERT(vert_source != "", "Vertex shader missing!");
+		LEOASSERT(frag_source != "", "Fragment shader missing!");
+
+		Reload(vert_source.c_str(), ((geom_source == "") ? nullptr : geom_source.c_str()), frag_source.c_str());
 	}
 
 	void ShaderProgram::Bind() const

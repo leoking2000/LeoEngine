@@ -16,16 +16,13 @@ namespace LEO
 	{
 	public:
 		Mesh(DefaultMesh shape);
-		Mesh(DefaultMesh shape, const glm::mat4* model_arr, u32 count);
-
 		Mesh(VertexArray& va, IndexBuffer& ib, u32 layout_size);
-		Mesh(VertexArray& va, IndexBuffer& ib, u32 layout_size, const glm::mat4* model_arr, u32 count);
 
 		Mesh(const Mesh& other) = delete;
 		Mesh& operator=(const Mesh&) = delete;
 
-		Mesh(Mesh&& other);
-		Mesh& operator=(Mesh&& other);
+		Mesh(Mesh&& other) noexcept;
+		Mesh& operator=(Mesh&& other) noexcept;
 
 		~Mesh() = default;
 	public:

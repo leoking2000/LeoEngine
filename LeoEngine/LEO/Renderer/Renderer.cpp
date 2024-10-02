@@ -4,9 +4,8 @@
 
 namespace LEO
 {
-	Renderer::Renderer(const RendererParameters& params, AssetManager& assetManager)
+	Renderer::Renderer(const RendererParameters& params)
 		:
-		m_assetManager(assetManager),
 		m_shader(RESOURCES_PATH"sandbox/shader")
 	{
 		glEnable(GL_DEPTH_TEST);
@@ -47,7 +46,7 @@ namespace LEO
 	{
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		for (const LEO::Drawable& obj : objects)
+		for (LEO::Drawable& obj : objects)
 		{
 			// set up lights
 			m_shader.SetUniform(U_AMBIENT_STRENGT, m_ambient_strength);

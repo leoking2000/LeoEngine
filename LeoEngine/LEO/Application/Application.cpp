@@ -26,7 +26,7 @@ namespace LEO
 		:
 		m_window(params.width, params.height, params.isResizable, params.vsync),
 		m_renderer(RendererParameters{ params.width, params.height, 
-			params.background_color, params.ambient_strength, params.fov_angle, params.min_z, params.max_z}, m_assetManager),
+			params.background_color, params.ambient_strength, params.fov_angle, params.min_z, params.max_z}),
 		m_sceneManager(m_window, m_assetManager, m_renderer)
 	{
 		m_window.SetWindowTitle(params.title);

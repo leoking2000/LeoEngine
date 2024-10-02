@@ -1,13 +1,12 @@
 #pragma once
-#include <unordered_map>
-#include "../Utilities/Log.h"
 #include "../Graphics/Mesh.h"
-#include "../Graphics/Shader.h"
 #include "../Graphics/Texture.h"
-#include "Model.h"
+#include "../Graphics/Shader.h"
 
 namespace LEO
 {
+	typedef u64 assetID;
+
 	class AssetManager
 	{
 	public:
@@ -15,30 +14,24 @@ namespace LEO
 
 		AssetManager(const AssetManager&) = delete;
 		AssetManager& operator=(const AssetManager&) = delete;
-
-		~AssetManager();
 	public:
-		u32   AddMesh(DefaultMesh shape);
-		u32   AddMesh(Mesh&& m);
-		void  RemoveMesh(u32 id);
-		Mesh& GetMesh(u32 id);
+		assetID  CreateMesh(DefaultMesh type);
+		assetID  CreateMesh(VertexArray& va, IndexBuffer& ib, u32 layout_size);
+		void     RemoveMesh(assetID id);
+		Mesh&    GetMesh(assetID id);
 	public:
-		u32 AddModel();
-		u32 AddModel(u32 mesh, Material mat = {});
-		//u32 AddModel(const std::string& filepath);
-		void RemoveModel(u32 id);
-		Model& GetModel(u32 id);
+		assetID  CreateTexture(const std::string& filepath);
+		assetID  CreateTexture(u32 width, u32 height, TextureFormat format = TextureFormat::RGBA8UB, u8* data = nullptr);
+		void     RemoveTexture(assetID id);
+		Texture& GetTexuture(assetID id);
 	public:
-		u32 AddTextureFromFile(const std::string& filepath);
-		void RemoveTexture(u32 id);
-		Texture& GetTexture(u32 id);
-	public:
-		u32 AddShader(const std::string& filepath);
-		void RemoveShader(u32 id);
-		ShaderProgram& GetShader(u32 id);
+		assetID  CreateShader(const std::string& filepath);
+		void     RemoveShader(assetID id);
+		ShaderProgram& GetShader(assetID id);
+		bool ReloadShader(const std::string& filepath, assetID id);
 	private:
 		template<typename T>
-		static void Remove(std::unordered_map<u32, T>& map, u32 id, const char* typeName)
+		static void Remove(std::unordered_map<assetID, T>& map, assetID id, const char* typeName)
 		{
 			auto it = map.find(id);
 			if (it != map.end())
@@ -52,7 +45,7 @@ namespace LEO
 		}
 
 		template<typename T>
-		static T& Get(std::unordered_map<u32, T>& map, u32 id, const char* typeName)
+		static T& Get(std::unordered_map<assetID, T>& map, assetID id, const char* typeName)
 		{
 			auto it = map.find(id);
 
@@ -62,11 +55,10 @@ namespace LEO
 		}
 	private:
 		// Stores our current "asset" id. This is incremented whenever a "asset" is added.
-		u32 m_insertedAssetID = 1;
-
-		std::unordered_map<u32, Mesh> m_mesh_map;
-		std::unordered_map<u32, Texture> m_texture_map;
-		std::unordered_map<u32, ShaderProgram> m_shader_map;
-		std::unordered_map<u32, Model> m_model_map;
+		assetID m_insertedAssetID = 1;
+	private:
+		std::unordered_map<assetID, Mesh> m_mesh_map;
+		std::unordered_map<assetID, Texture> m_texture_map;
+		std::unordered_map<assetID, ShaderProgram> m_shader_map;
 	};
 }
