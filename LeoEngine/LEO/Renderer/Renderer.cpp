@@ -31,8 +31,6 @@ namespace LEO
 
 	void Renderer::OnEvent(const Event& e)
 	{
-		m_camera.OnEvent(e);
-
 		if (e.GetEventType() == LEO::EventType::WindowResizeEvent)
 		{
 			const LEO::WindowReseizeEvent& s = EVENT_CAST(e, LEO::WindowReseizeEvent);

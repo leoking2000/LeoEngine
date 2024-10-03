@@ -31,7 +31,7 @@ namespace LEO
 		ShapeType2D shape, f32 data0, f32 data1,
 		bool isStatic, f32 mass, f32 bounciness)
 		:
-		m_pos(pos),
+		Position(pos),
 		m_type(shape),
 		m_data{data0, data1},
 		m_isStatic(isStatic),

@@ -15,6 +15,9 @@ namespace LEO
 
         static glm::vec2 Vec2();
         static glm::vec2 Vec2(f32 min, f32 max);
+
+        static glm::vec3 Vec3();
+        static glm::vec3 Vec3(f32 min, f32 max);
     private:
         Random();
         static Random& Get();

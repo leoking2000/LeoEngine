@@ -43,4 +43,14 @@ namespace LEO
     {
         return Float(min, max) * Vec2();
     }
+
+    glm::vec3 Random::Vec3()
+    {
+        return glm::vec3(2.0f * Float() - 1.0f, 2.0f * Float() - 1.0f, 2.0f * Float() - 1.0f);
+    }
+
+    glm::vec3 Random::Vec3(f32 min, f32 max)
+    {
+        return Float(min, max) * Vec3();
+    }
 }
