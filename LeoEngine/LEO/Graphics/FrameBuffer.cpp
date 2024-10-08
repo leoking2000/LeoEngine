@@ -3,6 +3,9 @@
 #include "FrameBuffer.h"
 
 
+static u32 CheckColorAttachmentNumber(u32 colorAttachmentCount);
+static u32 CheckFramebufferStatus(u32 framebuffer_object);
+
 namespace LEO
 {
     FrameBuffer::FrameBuffer(u32 width, u32 height, u32 colorAttachmentCount, 
@@ -30,52 +33,54 @@ namespace LEO
 
 	FrameBuffer::FrameBuffer(FrameBuffer&& other) noexcept
 		:
-		m_width(other.m_width),
-		m_height(other.m_height),
-		m_depth(other.m_depth),
-		m_id(other.m_id),
-		m_depth_texture(std::move(other.m_depth_texture)),
-		m_color_attachments(std::move(other.m_color_attachments))
+        m_id(other.m_id),
+		m_size(other.m_size),
+        m_num_color_attachments(other.m_num_color_attachments),
+        m_format(other.m_format),
+        m_depth_texture(std::move(other.m_depth_texture))
 	{
-		other.m_width = 0;
-		other.m_height = 0;
-		other.m_depth = 0;
 		other.m_id = 0;
+
+        for (i32 i = 0; i < other.m_num_color_attachments; i++)
+        {
+            m_color_attachments[i] = std::move(other.m_color_attachments[i]);
+        }
 	}
 
     FrameBuffer& FrameBuffer::operator=(FrameBuffer&& other) noexcept
     {
-        m_color_attachments.clear();
-
+        for (i32 i = 0; i < m_num_color_attachments; i++)
+        {
+            m_color_attachments[i].~Texture();
+        }
         if (m_depth_texture)
         {
             glDeleteTextures(1, &m_depth_texture->m_id);
             m_depth_texture->m_id = 0;
         }
-
         glDeleteFramebuffers(1, &m_id);
 
         m_id = other.m_id;
+        m_size = other.m_size;
+        m_format = other.m_format;
+        m_depth_texture = std::move(other.m_depth_texture);
         other.m_id = 0;
 
-        m_width = other.m_width;
-        other.m_width = 0;
-
-        m_height = other.m_height;
-        other.m_height = 0;
-
-        m_depth = other.m_depth;
-        other.m_depth = 0;
-
-        m_depth_texture = std::move(other.m_depth_texture);
-        m_color_attachments = std::move(other.m_color_attachments);
+        m_num_color_attachments = other.m_num_color_attachments;
+        for (i32 i = 0; i < other.m_num_color_attachments; i++)
+        {
+            m_color_attachments[i] = std::move(other.m_color_attachments[i]);
+        }
 
         return *this;
     }
 
 	LEO::FrameBuffer::~FrameBuffer()
 	{
-		m_color_attachments.clear();
+        for (i32 i = 0; i < m_num_color_attachments; i++)
+        {
+            m_color_attachments[i].~Texture();
+        }
 
 		if (m_depth_texture)
 		{
@@ -90,7 +95,7 @@ namespace LEO
     {
         glBindFramebuffer(GL_FRAMEBUFFER, m_id);
 
-        constexpr static GLenum drawbuffers[32] = {
+        constexpr static GLenum drawbuffers[MAX_COLOR_ATTACHMENTS] = {
             GL_COLOR_ATTACHMENT0,
             GL_COLOR_ATTACHMENT1,
             GL_COLOR_ATTACHMENT2,
@@ -98,34 +103,10 @@ namespace LEO
             GL_COLOR_ATTACHMENT4,
             GL_COLOR_ATTACHMENT5,
             GL_COLOR_ATTACHMENT6,
-            GL_COLOR_ATTACHMENT7,
-            GL_COLOR_ATTACHMENT8,
-            GL_COLOR_ATTACHMENT9,
-            GL_COLOR_ATTACHMENT10,
-            GL_COLOR_ATTACHMENT11,
-            GL_COLOR_ATTACHMENT12,
-            GL_COLOR_ATTACHMENT13,
-            GL_COLOR_ATTACHMENT14,
-            GL_COLOR_ATTACHMENT15,
-            GL_COLOR_ATTACHMENT16,
-            GL_COLOR_ATTACHMENT17,
-            GL_COLOR_ATTACHMENT18,
-            GL_COLOR_ATTACHMENT19,
-            GL_COLOR_ATTACHMENT20,
-            GL_COLOR_ATTACHMENT21,
-            GL_COLOR_ATTACHMENT22,
-            GL_COLOR_ATTACHMENT23,
-            GL_COLOR_ATTACHMENT24,
-            GL_COLOR_ATTACHMENT25,
-            GL_COLOR_ATTACHMENT26,
-            GL_COLOR_ATTACHMENT27,
-            GL_COLOR_ATTACHMENT28,
-            GL_COLOR_ATTACHMENT29,
-            GL_COLOR_ATTACHMENT30,
-            GL_COLOR_ATTACHMENT31
+            GL_COLOR_ATTACHMENT7
         };
 
-        glDrawBuffers((GLsizei)m_color_attachments.size(), drawbuffers);
+        glDrawBuffers((GLsizei)m_num_color_attachments, drawbuffers);
     }
 
     void FrameBuffer::UnBind() const
@@ -155,128 +136,70 @@ namespace LEO
 
     void FrameBuffer::Resize(u32 width, u32 height)
     {
-        m_width = width;
-        m_height = height;
+        m_size = glm::vec3(width, height, 0);
 
         if (m_depth_texture)
         {
-            m_depth_texture->Resize(glm::uvec3(m_width, m_height, 0));
+            m_depth_texture->Resize(m_size, TextureFormat::DEPTH_COMPONENT32F);
         }
 
-        for (Texture& tex : m_color_attachments)
+        for (i32 i = 0; i < m_num_color_attachments; i++)
         {
-            tex.Resize(glm::uvec3(m_width, m_height, 0));
+            m_color_attachments[i].Resize(m_size, m_format);
         }
 
-        GLenum status = CheckFramebufferStatus(m_id);
+        LEOASSERT(CheckFramebufferStatus(m_id) == GL_FRAMEBUFFER_COMPLETE, "Frame buffer error");
     }
 
     u8 FrameBuffer::NumberOfColorAttachments() const
     {
-        return (u8)m_color_attachments.size();
-    }
-
-    u32 FrameBuffer::Width() const
-    {
-        return m_width;
-    }
-
-    u32 FrameBuffer::Height() const
-    {
-        return m_height;
-    }
-
-    u32 FrameBuffer::Depth() const
-    {
-        return m_depth;
+        return (u8)m_num_color_attachments;
     }
 
     void FrameBuffer::InitColorAttachmentMode(u32 width, u32 height, u32 colorAttachmentCount,
         TextureMinFiltering min_filter, TextureMagFiltering mag_filter, TextureFormat format)
     {
-        m_width = width;
-        m_height = height;
-        m_depth = 0;
-
         glGenFramebuffers(1, &m_id);
         glBindFramebuffer(GL_FRAMEBUFFER, m_id);
 
-        colorAttachmentCount = CheckColorAttachmentNumber(colorAttachmentCount);
+        m_size = glm::vec3(width, height, 0);
+        m_num_color_attachments = CheckColorAttachmentNumber(colorAttachmentCount);
+        m_format = format;
 
-        for (u8 i = 0; i < colorAttachmentCount; i++)
+        for (u8 i = 0; i < m_num_color_attachments; i++)
         {
-            Texture& tex = m_color_attachments.emplace_back(DIM_2D, glm::uvec3(m_width, m_height, 0), format,
-                min_filter, mag_filter,
-                TextureWrapping::CLAMP_TO_EDGE, TextureWrapping::CLAMP_TO_EDGE, (u8*)0u
-            );
+            m_color_attachments[i] = Texture(TextureDimensions::DIM_2D, m_size, m_format, min_filter, mag_filter,
+                TextureWrapping::CLAMP_TO_EDGE, TextureWrapping::CLAMP_TO_EDGE, false, nullptr);
 
-            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, Texture::TYPE[tex.m_params.dimensions], tex.m_id, 0);
+            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, 
+                m_color_attachments[i].GetType(), m_color_attachments[i].ID(), 0);
         }
 
-        m_depth_texture = Texture(DIM_2D, { m_width, m_height, 0 },
-            TextureFormat::DEPTH_COMPONENT32F,
+        m_depth_texture = Texture(TextureDimensions::DIM_2D, m_size, TextureFormat::DEPTH_COMPONENT32F,
             TextureMinFiltering::MIN_NEAREST, TextureMagFiltering::MAG_NEAREST,
-            TextureWrapping::CLAMP_TO_EDGE, TextureWrapping::CLAMP_TO_EDGE, 0);
+            TextureWrapping::CLAMP_TO_EDGE, TextureWrapping::CLAMP_TO_EDGE, false, 0);
 
-        glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, m_depth_texture->m_id, 0);
+        glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, m_depth_texture->ID(), 0);
 
         //LOGDEBUG("FrameBuffer({}): Created with size ({},{}) and {} color attachments", m_id, m_width, m_height, colorAttachmentCount);
-        LEOASSERT(CheckFramebufferStatus(m_id) == GL_FRAMEBUFFER_COMPLETE, "Frame buffer error");
-    }
-
-    void FrameBuffer::InitColorAttachmentMode3D(u32 width, u32 height, u32 depth, u32 colorAttachmentCount,
-        TextureMinFiltering min_filter, TextureMagFiltering mag_filter, TextureFormat format)
-    {
-        m_width = width;
-        m_height = height;
-        m_depth = depth;
-
-        glGenFramebuffers(1, &m_id);
-        glBindFramebuffer(GL_FRAMEBUFFER, m_id);
-
-        colorAttachmentCount = CheckColorAttachmentNumber(colorAttachmentCount);
-
-        for (u8 i = 0; i < colorAttachmentCount; i++)
-        {
-            Texture& tex = m_color_attachments.emplace_back(DIM_3D, glm::uvec3(m_width, m_height, m_depth), format,
-                min_filter, mag_filter,
-                TextureWrapping::CLAMP_TO_EDGE, TextureWrapping::CLAMP_TO_EDGE, (u8*)0u
-            );
-
-            glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, tex.m_id, 0);
-        }
-
-        /*
-        m_depth_texture = Texture(DIM_2D, { m_width, m_height, 0 },
-            TextureFormat::DEPTH_COMPONENT32F,
-            TextureMinFiltering::MIN_NEAREST, TextureMagFiltering::MAG_NEAREST,
-            TextureWrapping::CLAMP_TO_EDGE, TextureWrapping::CLAMP_TO_EDGE, 0);
-
-        glCall(glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, m_depth_texture->m_id, 0));
-        */
-
-        //LOGDEBUG("FrameBuffer({}): Created with size ({},{},{}) and {} color attachments", m_id, m_width, m_height, m_depth, colorAttachmentCount);
         LEOASSERT(CheckFramebufferStatus(m_id) == GL_FRAMEBUFFER_COMPLETE, "Frame buffer error");
     }
 
     void FrameBuffer::InitLayered(u32 width, u32 height, u32 colorAttachmentCount,
         TextureMinFiltering min_filter, TextureMagFiltering mag_filter, TextureFormat format)
     {
-        m_width = width;
-        m_height = height;
-        m_depth = 0;
-
         glGenFramebuffers(1, &m_id);
         glBindFramebuffer(GL_FRAMEBUFFER, m_id);
 
-        colorAttachmentCount = CheckColorAttachmentNumber(colorAttachmentCount);
+        m_size = glm::vec3(width, height, CheckColorAttachmentNumber(colorAttachmentCount));
+        m_num_color_attachments = 1;
+        m_format = format;
 
-        Texture& tex = m_color_attachments.emplace_back(DIM_2D_ARRAY, glm::uvec3(m_width, m_height, colorAttachmentCount), format,
-            min_filter, mag_filter,
-            TextureWrapping::CLAMP_TO_EDGE, TextureWrapping::CLAMP_TO_EDGE, (u8*)0u
-        );
+        m_color_attachments[0] = Texture(TextureDimensions::DIM_2D_ARRAY, m_size, m_format,
+            min_filter, mag_filter, TextureWrapping::CLAMP_TO_EDGE, TextureWrapping::CLAMP_TO_EDGE, 
+            false, (u8*)0u);
 
-        glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, tex.m_id, 0);
+        glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, m_color_attachments[0].ID(), 0);
 
         //LOGDEBUG("FrameBuffer({}): Created with size ({},{}) and {} color attachments Layered", m_id, m_width, m_height, colorAttachmentCount);
         LEOASSERT(CheckFramebufferStatus(m_id) == GL_FRAMEBUFFER_COMPLETE, "Frame buffer error");
@@ -285,79 +208,89 @@ namespace LEO
     void FrameBuffer::InitTexture3D(u32 width, u32 height, u32 colorAttachmentCount,
         TextureMinFiltering min_filter, TextureMagFiltering mag_filter, TextureFormat format)
     {
-        m_width = width;
-        m_height = height;
-        m_depth = colorAttachmentCount;
-
         glGenFramebuffers(1, &m_id);
         glBindFramebuffer(GL_FRAMEBUFFER, m_id);
 
-        Texture& tex = m_color_attachments.emplace_back(DIM_3D, glm::uvec3(m_width, m_height, m_depth), format,
-            min_filter, mag_filter,
-            TextureWrapping::CLAMP_TO_EDGE, TextureWrapping::CLAMP_TO_EDGE, (u8*)0u
-        );
+        m_size = glm::vec3(width, height, colorAttachmentCount);
+        m_num_color_attachments = 1;
+        m_format = format;
 
-        glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, tex.m_id, 0);
+        m_color_attachments[0] = Texture(TextureDimensions::DIM_3D, m_size, m_format, min_filter, mag_filter,
+            TextureWrapping::CLAMP_TO_EDGE, TextureWrapping::CLAMP_TO_EDGE, false, (u8*)0u);
+
+        glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, m_color_attachments[0].ID(), 0);
 
         //LOGDEBUG("FrameBuffer({}): Created with size ({},{},{})", m_id, m_width, m_height, m_depth);
         LEOASSERT(CheckFramebufferStatus(m_id) == GL_FRAMEBUFFER_COMPLETE, "Frame buffer error");
     }
 
-    u32 FrameBuffer::CheckColorAttachmentNumber(u32 colorAttachmentCount)
+    void FrameBuffer::InitColorAttachmentMode3D(u32 width, u32 height, u32 depth, u32 colorAttachmentCount,
+        TextureMinFiltering min_filter, TextureMagFiltering mag_filter, TextureFormat format)
     {
-        GLint maxDrawBuf = 0;
-        glGetIntegerv(GL_MAX_DRAW_BUFFERS, &maxDrawBuf);
+        glGenFramebuffers(1, &m_id);
+        glBindFramebuffer(GL_FRAMEBUFFER, m_id);
 
-        if (colorAttachmentCount == 0)
+        m_size = glm::vec3(width, height, depth);
+        m_num_color_attachments = CheckColorAttachmentNumber(colorAttachmentCount);
+        m_format = format;
+
+        for (u8 i = 0; i < m_num_color_attachments; i++)
         {
-            glDrawBuffer(GL_NONE);
-            glReadBuffer(GL_NONE);
-        }
-        else if ((GLint)colorAttachmentCount > maxDrawBuf)
-        {
-            LOGWARN("FrameBuffer({}): Attempted to create with {} color attachments, {} will be created insted.",
-                m_id, colorAttachmentCount, maxDrawBuf);
-            colorAttachmentCount = maxDrawBuf;
+            m_color_attachments[i] = Texture(TextureDimensions::DIM_3D, m_size, m_format, min_filter, mag_filter,
+                TextureWrapping::CLAMP_TO_EDGE, TextureWrapping::CLAMP_TO_EDGE, false, (u8*)0u
+            );
+
+            glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, m_color_attachments[i].ID(), 0);
         }
 
+        //LOGDEBUG("FrameBuffer({}): Created with size ({},{},{}) and {} color attachments", m_id, m_width, m_height, m_depth, colorAttachmentCount);
+        LEOASSERT(CheckFramebufferStatus(m_id) == GL_FRAMEBUFFER_COMPLETE, "Frame buffer error");
+    }
+}
+
+u32 CheckColorAttachmentNumber(u32 colorAttachmentCount)
+{
+    if (colorAttachmentCount < MAX_COLOR_ATTACHMENTS)
+    {
         return colorAttachmentCount;
     }
 
-    u32 CheckFramebufferStatus(u32 framebuffer_object)
+    return MAX_COLOR_ATTACHMENTS;
+}
+
+u32 CheckFramebufferStatus(u32 framebuffer_object)
+{
+    glBindFramebuffer(GL_FRAMEBUFFER, framebuffer_object);
+    u32 status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+
+    if (status != GL_FRAMEBUFFER_COMPLETE)
     {
-        glBindFramebuffer(GL_FRAMEBUFFER, framebuffer_object);
-        u32 status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
-
-        if (status != GL_FRAMEBUFFER_COMPLETE)
+        LOGERROR("FrameBuffer({}): glCheckFramebufferStatus: error {}", framebuffer_object, status);
+        switch (status)
         {
-            LOGERROR("FrameBuffer({}): glCheckFramebufferStatus: error {}", framebuffer_object, status);
-            switch (status)
-            {
-            case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT:
-                LOGERROR("Incomplete attatchement");
-                break;
-            case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT:
-                LOGERROR("Incomplete missing attachment");
-                break;
-            case GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER:
-                LOGERROR("Incomplete draw buffer");
-                break;
-            case GL_FRAMEBUFFER_UNSUPPORTED:
-                LOGERROR("Unsupported");
-                break;
-            case GL_FRAMEBUFFER_INCOMPLETE_LAYER_TARGETS:
-                LOGERROR("Incomplete layer targets");
-                break;
-            default:
-                LOGERROR("Default error");
-                break;
-            }
+        case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT:
+            LOGERROR("Incomplete attatchement");
+            break;
+        case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT:
+            LOGERROR("Incomplete missing attachment");
+            break;
+        case GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER:
+            LOGERROR("Incomplete draw buffer");
+            break;
+        case GL_FRAMEBUFFER_UNSUPPORTED:
+            LOGERROR("Unsupported");
+            break;
+        case GL_FRAMEBUFFER_INCOMPLETE_LAYER_TARGETS:
+            LOGERROR("Incomplete layer targets");
+            break;
+        default:
+            LOGERROR("Default error");
+            break;
         }
-
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
-        return status;
     }
 
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    return status;
 }
 
 

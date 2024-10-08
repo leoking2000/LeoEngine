@@ -104,7 +104,10 @@ namespace LEO
 		m_id(other.m_id)
 	{
 		other.m_id = 0;
-		m_buffers = std::move(other.m_buffers);
+		for (i32 i = 0; i < MAX_VERTEXBUFFERS; i++)
+		{
+			m_buffers[i] = std::move(other.m_buffers[i]);
+		}	
 	}
 
 	VertexArray& VertexArray::operator=(VertexArray&& other)
@@ -114,7 +117,10 @@ namespace LEO
 		m_id = other.m_id;
 		other.m_id = 0;
 
-		m_buffers = std::move(other.m_buffers);
+		for (i32 i = 0; i < MAX_VERTEXBUFFERS; i++)
+		{
+			m_buffers[i] = std::move(other.m_buffers[i]);
+		}
 
 		return *this;
 	}

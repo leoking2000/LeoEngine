@@ -17,17 +17,19 @@ namespace LEO
 		ShaderProgram(const ShaderProgram& other) = delete;
 		ShaderProgram& operator=(const ShaderProgram& other) = delete;
 
-		ShaderProgram(ShaderProgram&& other);
-		ShaderProgram& operator=(ShaderProgram&& other);
+		ShaderProgram(ShaderProgram&& other) noexcept;
+		ShaderProgram& operator=(ShaderProgram&& other) noexcept;
 
 		~ShaderProgram();
 	public:
 		bool Reload(const char* vertexSrc, const char* geoSrc, const char* fragSrc);
 		bool Reload(const char* vertexSrc, const char* fragSrc);
 		bool Reload(const std::string& filepath);
+		bool Reload();
 	public:
 		void Bind() const;
 		void UnBind() const;
+		bool IsValid() const;
 	public:
 		bool SetUniform(const std::string& name, float num) const;
 		bool SetUniform(const std::string& name, glm::vec2 a) const;
@@ -44,9 +46,12 @@ namespace LEO
 		bool SetUniform(const std::string& name, const std::vector<glm::vec3>& vec_arr, u32 size);
 	private:
 		i32 GetLocation(const std::string& name) const;
-		bool IsValid() const;
 	private:
 		u32 m_program_id;
+		std::string m_filepath;
 		mutable std::unordered_map<std::string, i32> m_uniforms; // storing uniforms locations
+	private:
+		ShaderProgram() = default;
+		friend class AssetManager;
 	};
 }

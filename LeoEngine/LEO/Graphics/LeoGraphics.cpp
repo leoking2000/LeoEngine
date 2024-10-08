@@ -1,7 +1,7 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include "../Utilities/defines.h"
-#include "../Utilities/LeoAssert.h"
+#include "../Utilities/Log.h"
 #include "LeoGraphics.h"
 
 namespace LEO

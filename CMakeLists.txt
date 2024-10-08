@@ -24,6 +24,6 @@ add_subdirectory(thirdparty/tinyobjloader) # 3D Model loading library
 ###########################
 
 add_subdirectory(LeoEngine)
-#add_subdirectory(Projects/SandBox)
+add_subdirectory(Projects/SandBox)
 #add_subdirectory(Projects/RoyalGameOfUr)
 #add_subdirectory(Projects/triliza)

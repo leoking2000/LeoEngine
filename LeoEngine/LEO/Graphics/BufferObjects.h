@@ -1,14 +1,14 @@
 #pragma once
-#include <vector>
 #include <glm/glm.hpp>
 #include "../Utilities/Types.h"
-#include "../Utilities/Log.h"
+#include "../Utilities/LeoAssert.h"
 
 namespace LEO
 {
 	class VertexBuffer
 	{
 	public:
+		VertexBuffer() = default;
 		VertexBuffer(const void* data, u32 size);
 
 		VertexBuffer(const VertexBuffer& other) = delete;
@@ -22,12 +22,13 @@ namespace LEO
 		void Bind() const;
 		void UnBind() const;
 	private:
-		u32 m_id;
+		u32 m_id = 0;
 	};
 
 	class IndexBuffer
 	{
 	public:
+		IndexBuffer() = default;
 		IndexBuffer(const u32* data, u32 count);
 
 		IndexBuffer(const IndexBuffer& other) = delete;
@@ -43,8 +44,8 @@ namespace LEO
 
 		inline u32 GetCount() const { return m_count; }
 	private:
-		u32 m_id;
-		u32 m_count;
+		u32 m_id    = 0;
+		u32 m_count = 0;
 	};
 
 	/*
@@ -150,6 +151,8 @@ namespace LEO
 		u32 m_stride;
 	};
 
+#define MAX_VERTEXBUFFERS 2
+
 	class VertexArray
 	{
 	public:
@@ -169,11 +172,12 @@ namespace LEO
 		template<u32 ELEMENTS_COUNT>
 		void AddBuffer(VertexBuffer& vb, const Layout<ELEMENTS_COUNT>& layout, u32 start = 0, bool per_instance = false)
 		{
+			LEOASSERTF(m_numOfBuffers < MAX_VERTEXBUFFERS, "Vertex array can have only {} vertex buffers.", MAX_VERTEXBUFFERS);
+
 			Bind();
 			vb.Bind();
 
 			u32 offset = 0;
-
 			for (u32 i = start; i < start + ELEMENTS_COUNT; i++)
 			{
 				AddAttrib(i, layout[i - start], layout.GetStride(), offset, per_instance);
@@ -182,12 +186,14 @@ namespace LEO
 			UnBind();
 			vb.UnBind();
 
-			m_buffers.emplace_back(std::move(vb));
+			m_buffers[m_numOfBuffers] = std::move(vb);
+			m_numOfBuffers++;
 		}
 	private:
 		void AddAttrib(u32 i, ElementType element_type, u32 stride, u32& offset, bool per_instance);
 	private:
-		u32 m_id;
-		std::vector<VertexBuffer> m_buffers;
+		u32 m_id = 0;
+		u32 m_numOfBuffers = 0;
+		VertexBuffer m_buffers[MAX_VERTEXBUFFERS];
 	};
 }

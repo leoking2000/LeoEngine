@@ -2,24 +2,6 @@
 #include <glm/glm.hpp>
 #include "Mesh.h"
 
-struct Vertex
-{
-	glm::vec3 pos;
-	glm::vec2 texCord;
-	glm::vec3 normal;
-	//glm::vec3 tangent;
-	//glm::vec3 bitangent;
-
-	bool operator==(const Vertex& rhs)
-	{
-		return pos == rhs.pos &&
-			texCord == rhs.texCord &&
-			normal == rhs.normal;//&&
-			//tangent == rhs.tangent &&
-			//bitangent == rhs.bitangent;
-	}
-};
-
 namespace LEO
 {
 	Mesh::Mesh(DefaultMesh shape)
@@ -181,37 +163,44 @@ namespace LEO
 
 	Mesh Mesh::GenarateSphere(u32 prec)
 	{
-		const uint32_t numVertices = (prec + 1) * (prec + 1);
-		const uint32_t numIndices = prec * prec * 6;
-
-		std::vector<Vertex> vertices(numVertices);
+		const u32 numVertices = (prec + 1) * (prec + 1);
+		const u32 numIndices = prec * prec * 6;
+		f32*    vertices = new f32[numVertices];
+		u32*    indices  = new u32[numIndices];
 
 		// calculate triangle vertices
 		for (u32 i = 0; i <= prec; i++)
 		{
 			for (u32 j = 0; j <= prec; j++)
 			{
+				if ((i * (prec + 1) + j) * 8 + 7 >= numVertices) break;
+
 				float y = (float)glm::cos(glm::radians(180.0f - i * 180.0f / prec));
 				float x = -(float)glm::cos(glm::radians(j * 360.0f / prec)) * (float)abs(cos(asin(y)));
 				float z = (float)glm::sin(glm::radians(j * 360.0f / (float)(prec))) * (float)abs(cos(asin(y)));
 
-				vertices[i * (prec + 1) + j].pos = glm::vec3(x, y, z);
-				vertices[i * (prec + 1) + j].texCord = glm::vec2(((float)j / prec), ((float)i / prec));
-				vertices[i * (prec + 1) + j].normal = glm::vec3(x, y, z);
+				vertices[(i * (prec + 1) + j) * 8 + 0] = x;
+				vertices[(i * (prec + 1) + j) * 8 + 1] = y;
+				vertices[(i * (prec + 1) + j) * 8 + 2] = z;
+
+				vertices[(i * (prec + 1) + j) * 8 + 3] = ((float)j / prec);
+				vertices[(i * (prec + 1) + j) * 8 + 4] = ((float)i / prec);
+
+				vertices[(i * (prec + 1) + j) * 8 + 5] = x;
+				vertices[(i * (prec + 1) + j) * 8 + 6] = y;
+				vertices[(i * (prec + 1) + j) * 8 + 7] = z;
 
 				// TODO: Caculate tangent and bitangent
-				//vertices[i * (prec + 1) + j].tangent = glm::vec3(x, y, z);
-				//vertices[i * (prec + 1) + j].bitangent = glm::vec3(x, y, z);
 			}
 		}
-
-		std::vector<uint32_t> indices(numIndices);
 
 		// calculate triangle indices
 		for (u32 i = 0; i < prec; i++)
 		{
 			for (u32 j = 0; j < prec; j++)
 			{
+				if (6 * (i * prec + j) + 5 >= numIndices) break;
+
 				indices[6 * (i * prec + j) + 0] = i * (prec + 1) + j;
 				indices[6 * (i * prec + j) + 1] = i * (prec + 1) + j + 1;
 				indices[6 * (i * prec + j) + 2] = (i + 1) * (prec + 1) + j;
@@ -221,43 +210,16 @@ namespace LEO
 			}
 		}
 
-		std::vector<float> vertex_buffer;
-		vertex_buffer.reserve(numVertices * 8);
-
-		for (Vertex& v : vertices)
-		{
-			vertex_buffer.emplace_back(v.pos.x);
-			vertex_buffer.emplace_back(v.pos.y);
-			vertex_buffer.emplace_back(v.pos.z);
-
-			vertex_buffer.emplace_back(v.texCord.s);
-			vertex_buffer.emplace_back(v.texCord.t);
-
-			vertex_buffer.emplace_back(v.normal.x);
-			vertex_buffer.emplace_back(v.normal.y);
-			vertex_buffer.emplace_back(v.normal.z);
-
-			//vertex_buffer.emplace_back(v.tangent.x);
-			//vertex_buffer.emplace_back(v.tangent.y);
-			//vertex_buffer.emplace_back(v.tangent.z);
-
-			//vertex_buffer.emplace_back(v.bitangent.x);
-			//vertex_buffer.emplace_back(v.bitangent.y);
-			//vertex_buffer.emplace_back(v.bitangent.z);
-		}
-
-		VertexBuffer vertexBuffer((const void*)vertex_buffer.data(), (u32)(vertex_buffer.size() * sizeof(float)));
-
+		VertexBuffer vertexBuffer((const void*)vertices, (u32)(numVertices * sizeof(float)));
 		ElementType arr[3] = { FLOAT3, FLOAT2, FLOAT3_N };
 		Layout<3> layout(arr);
-
 		VertexArray vertexArray;
 		vertexArray.AddBuffer(vertexBuffer, layout);
-
-
-		IndexBuffer indexBuffer(indices.data(), (u32)indices.size());
-
+		IndexBuffer indexBuffer(indices, (u32)numIndices);
 		Mesh mesh{ vertexArray, indexBuffer, 3 };
+
+		delete[] vertices;
+		delete[] indices;
 
 		return mesh;
 	}

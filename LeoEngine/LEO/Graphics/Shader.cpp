@@ -10,7 +10,8 @@ namespace LEO
 {
 	ShaderProgram::ShaderProgram(const std::string& filepath)
 		:
-		m_program_id(0)
+		m_program_id(0),
+		m_filepath(filepath)
 	{
 		Reload(filepath);
 	}
@@ -28,19 +29,21 @@ namespace LEO
 		Reload(vertSrc, geoSrc, fragSrc);
 	}
 
-	ShaderProgram::ShaderProgram(ShaderProgram&& other)
+	ShaderProgram::ShaderProgram(ShaderProgram&& other) noexcept
 		:
 		m_program_id(other.m_program_id),
+		m_filepath(other.m_filepath),
 		m_uniforms(std::move(other.m_uniforms))
 	{
 		other.m_program_id = 0;
 	}
 
-	ShaderProgram& ShaderProgram::operator=(ShaderProgram&& other)
+	ShaderProgram& ShaderProgram::operator=(ShaderProgram&& other) noexcept
 	{
 		glDeleteProgram(m_program_id);
 
 		m_program_id = other.m_program_id;
+		m_filepath = other.m_filepath;
 		m_uniforms = std::move(other.m_uniforms);
 
 		other.m_program_id = 0;
@@ -79,6 +82,7 @@ namespace LEO
 
 	bool ShaderProgram::Reload(const std::string& filepath)
 	{
+		m_filepath = filepath;
 		std::string vert_source = ReadFile(filepath + ".vert");
 		std::string geom_source = ReadFile(filepath + ".geom");
 		std::string frag_source = ReadFile(filepath + ".frag");
@@ -87,6 +91,11 @@ namespace LEO
 		LEOASSERT(frag_source != "", "Fragment shader missing!");
 
 		Reload(vert_source.c_str(), ((geom_source == "") ? nullptr : geom_source.c_str()), frag_source.c_str());
+	}
+
+	bool ShaderProgram::Reload()
+	{
+		return Reload(m_filepath);
 	}
 
 	void ShaderProgram::Bind() const

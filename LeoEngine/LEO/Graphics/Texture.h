@@ -4,7 +4,7 @@
 
 namespace LEO
 {
-    enum TextureDimensions
+    enum class TextureDimensions : u8
     {
         DIM_1D = 0,
         DIM_2D = 1,
@@ -12,7 +12,7 @@ namespace LEO
         DIM_2D_ARRAY = 3
     };
 
-    enum class TextureFormat
+    enum class TextureFormat : u8
     {
         RGBA8UB,
         RGBA16F,
@@ -23,7 +23,7 @@ namespace LEO
         DEPTH_COMPONENT32F
     };
 
-    enum class TextureWrapping
+    enum class TextureWrapping : u8
     {
         REPEAT,
         MIRRORED_REPEAT,
@@ -31,7 +31,7 @@ namespace LEO
         CLAMP_TO_BORDER
     };
 
-    enum class TextureMinFiltering
+    enum class TextureMinFiltering : u8
     {
         MIN_NEAREST,
         MIN_LINEAR,
@@ -41,7 +41,7 @@ namespace LEO
         MIN_LINEAR_MIPMAP_LINEAR
     };
 
-    enum class TextureMagFiltering
+    enum class TextureMagFiltering : u8
     {
         MAG_NEAREST,
         MAG_LINEAR
@@ -52,64 +52,43 @@ namespace LEO
     public:
         Texture(u32 width, u32 height, TextureFormat format = TextureFormat::RGBA8UB, u8* data = nullptr);
 
-        Texture(TextureDimensions dimensions, glm::uvec3 size, TextureFormat format,
+        Texture(TextureDimensions dimensions,const glm::uvec3& size, TextureFormat format,
             TextureMinFiltering min_filter, TextureMagFiltering mag_filter,
-            TextureWrapping S, TextureWrapping T, u8* data
+            TextureWrapping S, TextureWrapping T, bool minimap, u8* data
         );
 
         Texture(const Texture& other) = delete;
         Texture& operator=(const Texture& other) = delete;
 
-        Texture(Texture&& other);
-        Texture& operator=(Texture&& other);
+        Texture(Texture&& other) noexcept;
+        Texture& operator=(Texture&& other) noexcept;
 
         ~Texture();
     public:
         inline u32 ID() const { return m_id; };
-        inline TextureDimensions Dimensions() const { return m_params.dimensions; }
-        inline glm::uvec3 Size() const { return m_params.size; }
+        inline glm::uvec3 Size() const { return m_size; }
+        inline TextureDimensions Dimensions() const { return m_dimensions; }
+        inline TextureFormat Format() const { return m_format; }
     public:
         void Bind(u32 slot = 0) const;
         void UnBind() const;
     public:
         void SetFiltering(TextureMinFiltering min_filter, TextureMagFiltering mag_filter);
         void SetWrapping(TextureWrapping S, TextureWrapping T);
-        void SetImageData(u8* data, TextureFormat format);
-        void Resize(const glm::uvec3& new_size);
+        void SetImageData(u8* data, TextureFormat format, bool minimap = false);
+        void Resize(const glm::uvec3& new_size, TextureFormat format);
     private:
         bool IsTexSizeValid(const glm::uvec3& new_size) const;
     private:
-        struct TextureParameters
-        {
-            TextureParameters(TextureDimensions dimensions, glm::uvec3 size,
-                TextureFormat format,
-                TextureMinFiltering min_filter, TextureMagFiltering mag_filter,
-                TextureWrapping S, TextureWrapping T
-            )
-                :
-                dimensions(dimensions),
-                size(size),
-                format(format),
-                min_filter(min_filter),
-                mag_filter(mag_filter),
-                wrapping_s(S),
-                wrapping_t(T)
-            {}
-
-            TextureDimensions dimensions;
-            glm::uvec3 size;
-            TextureFormat format;
-            TextureMinFiltering min_filter;
-            TextureMagFiltering mag_filter;
-            TextureWrapping wrapping_s;
-            TextureWrapping wrapping_t;
-        };
+        u32 m_id = 0u; 
+        glm::uvec3 m_size = glm::uvec3(0u);
+        TextureDimensions m_dimensions = TextureDimensions::DIM_1D;
+        TextureFormat m_format = TextureFormat::RGBA8UB;
     private:
-        u32 m_id = 0;
-        bool m_minimap = false;
-        TextureParameters m_params;
-    private:
+        Texture() = default;
         friend class FrameBuffer;
-        static u32 TYPE[4];
+        friend class AssetManager;
+    private:
+        u32 GetType();
     };
 }

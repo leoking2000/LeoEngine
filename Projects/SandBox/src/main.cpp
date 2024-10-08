@@ -1,4 +1,5 @@
 #include "TestScene.h"
+#define CLIENT_ENTRY_POINT
 #include <LEO/EntryPoint.h>
 
 LEO::ApplicationParameters GetUserApplicationParameters(int argc, char* argv[])
@@ -13,3 +14,9 @@ LEO::ApplicationParameters GetUserApplicationParameters(int argc, char* argv[])
 	return p;
 }
 
+int LEO::Main(int argc, char* argv[])
+{
+
+
+	return 0;
+}

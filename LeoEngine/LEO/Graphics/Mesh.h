@@ -41,5 +41,8 @@ namespace LEO
 		u32 m_layout_size = 0;
 		VertexArray m_vertexArray;
 		IndexBuffer m_indexBuffer;
+	private:
+		Mesh() = default;
+		friend class AssetManager;
 	};
 }
